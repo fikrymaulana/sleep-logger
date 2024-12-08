@@ -1,0 +1,3 @@
+# General Configuration
+default: &default
+  RAILS_MAX_THREADS: 5
