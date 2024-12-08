@@ -20,5 +20,6 @@ module V1
 
     # Mount the V1 API
     mount V1::Users
+    mount V1::SleepRecords
   end
 end
