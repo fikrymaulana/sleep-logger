@@ -29,4 +29,28 @@ RSpec.describe V1::Users, type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe 'DELETE /api/v1/users/:id/unfollow' do
+    before { user.followees << followed_user }
+
+    it 'allows a user to unfollow another user' do
+      delete "/api/v1/users/#{followed_user.id}/unfollow", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['message']).to eq("You unfollowed #{followed_user.name}")
+      expect(user.followees).not_to include(followed_user)
+    end
+
+    it 'returns success even if the user is not followed' do
+      delete "/api/v1/users/#{unfollowed_user.id}/unfollow", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(user.followees).not_to include(unfollowed_user)
+    end
+
+    it 'returns an error if the user does not exist' do
+      post "/api/v1/users/999999999/follow", headers: headers
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
