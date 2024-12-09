@@ -8,6 +8,11 @@
 if Rails.env.development?
   # Generate random users
   5.times do
-    User.create(name: Faker::Name.name, created_at: Time.now, updated_at: Time.now)
+    User.create(
+      name: Faker::Name.name,
+      created_at: Time.now,
+      updated_at: Time.now,
+      api_key: SecureRandom.hex(20)
+    )
   end
 end
