@@ -20,15 +20,17 @@ module V1
                   .where(clock_out: nil)
         
         record = record.where(id: params[:sleep_record_id]) if params[:sleep_record_id].present?
-        
+
         record = record.order(:created_at).last
 
         if record.nil?
           error!('No active sleep record found to clock out', 404)
         else
-          record.update!(clock_out: Time.now)
+          clock_out = Time.now
+          duration = clock_out - record.clock_in
+          record.update!(clock_out: clock_out, duration: duration)
 
-          { id: record.id, clock_in: record.clock_in, clock_out: record.clock_out }
+          present record, with: V1::Entities::SleepRecord
         end
       end
     end
