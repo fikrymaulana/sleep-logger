@@ -34,4 +34,17 @@ RSpec.describe V1::SleepRecords, type: :request do
       expect(res['clock_out']).to be_present
     end
   end
+
+  context 'when there are multiple sleep records' do
+    it 'returns all sleep records' do
+      create_list(:sleep_record, 3, user: user)
+
+      get '/api/v1/sleep_records', headers: headers
+
+      expect(response).to have_http_status(:ok)
+      res = JSON.parse(response.body)
+      
+      expect(res.count).to eq(3)
+    end
+  end
 end

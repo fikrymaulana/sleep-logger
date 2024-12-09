@@ -33,6 +33,21 @@ module V1
           present record, with: V1::Entities::SleepRecord
         end
       end
+
+      desc 'Get all sleep records'
+      params do
+        optional :page, type: Integer, default: 1
+        optional :per_page, type: Integer, default: 20 
+        optional :sort_order, type: String, default: 'desc'
+      end
+      get do
+        records = current_user.sleep_records
+                  .order(created_at: params[:sort_order])
+                  .limit(params[:per_page])
+                  .offset((params[:page] - 1) * params[:per_page])
+
+        present records, with: V1::Entities::SleepRecord
+      end
     end
   end
 end
