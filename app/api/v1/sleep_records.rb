@@ -64,6 +64,7 @@ module V1
                                  sleep_records.clock_out,
                                  sleep_records.duration')
                         .where('sleep_records.clock_in >= ?', 1.week.ago)
+                        .where('sleep_records.clock_out IS NOT NULL')
                         .order(duration: params[:sort_order])
                         .limit(params[:per_page])
                         .offset((params[:page] - 1) * params[:per_page])
