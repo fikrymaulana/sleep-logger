@@ -48,6 +48,28 @@ module V1
 
         present records, with: V1::Entities::SleepRecord
       end
+
+      desc 'Get sleep records of following users from the past week'
+      params do
+        optional :page, type: Integer, default: 1
+        optional :per_page, type: Integer, default: 20 
+        optional :sort_order, type: String, default: 'desc'
+      end
+      get :following do
+        sleep_records = current_user.followees
+                        .joins(:sleep_records)
+                        .select('users.id AS user_id, 
+                                 users.name AS user_name, 
+                                 sleep_records.clock_in,
+                                 sleep_records.clock_out,
+                                 sleep_records.duration')
+                        .where('sleep_records.clock_in >= ?', 1.week.ago)
+                        .order(duration: params[:sort_order])
+                        .limit(params[:per_page])
+                        .offset((params[:page] - 1) * params[:per_page])
+
+        present sleep_records, with: V1::Entities::FollowingSleepRecord
+      end
     end
   end
 end

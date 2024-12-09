@@ -43,8 +43,26 @@ RSpec.describe V1::SleepRecords, type: :request do
 
       expect(response).to have_http_status(:ok)
       res = JSON.parse(response.body)
-      
+
       expect(res.count).to eq(3)
     end
   end
+
+  context 'when there are multiple sleep records for following users' do
+    it 'returns all sleep records' do 
+      followed_user1 = create(:user)
+      followed_user2 = create(:user)
+      create(:follow, follower: user, followee: followed_user1)
+      create(:follow, follower: user, followee: followed_user2)
+      create_list(:sleep_record, 2, user: followed_user1)
+      create_list(:sleep_record, 3, user: followed_user2)
+
+      get '/api/v1/sleep_records/following', headers: headers
+
+      expect(response).to have_http_status(:ok)
+      res = JSON.parse(response.body)
+      expect(res.count).to eq(5)
+    end
+  end
 end
+
