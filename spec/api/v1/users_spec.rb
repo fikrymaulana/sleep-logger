@@ -28,6 +28,32 @@ RSpec.describe V1::Users, type: :request do
       post "/api/v1/users/999999999/follow", headers: headers
       expect(response).to have_http_status(:not_found)
     end
+
+    it 'returns an error if the user tries to follow themselves' do
+      post "/api/v1/users/#{user.id}/follow", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)['error']).to eq('Cannot follow yourself')
+    end
+
+    it 'returns an error if the user is already following the user' do
+      user.followees << followed_user
+      post "/api/v1/users/#{followed_user.id}/follow", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['message']).to eq("You are already following #{followed_user.name}")
+    end
+
+    it 'recovers a soft-deleted follow record' do
+      follow = create(:follow, follower: user, followee: followed_user)
+      follow.destroy  # Soft delete
+      
+      post "/api/v1/users/#{followed_user.id}/follow", headers: headers
+      
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)['message']).to eq("You are now following #{followed_user.name} again")
+      expect(user.followees).to include(followed_user)
+    end
   end
 
   describe 'DELETE /api/v1/users/:id/unfollow' do
